@@ -1,0 +1,2451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+  <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+  <meta name="referrer" content="no-referrer" />
+  <title>UK Billz | 1:1 Notes</title>
+  <style>
+    /*
+      MEMBERS-ONLY STATIC STOREFRONT
+      ------------------------------------------------------------
+      Edit the shop, products, shipping, BTC address, and access gate
+      in the STORE_CONFIG object inside the <script> tag near the top
+      of the JavaScript section.
+
+      Static-site limitations:
+      - This cannot securely verify BTC payments automatically.
+      - This cannot securely store private customer/order data.
+      - Link-only access is not real authentication.
+      - The optional password gate is client-side only and not secure.
+      - For a real private shop, use server-side authentication, order
+        storage, and manual/API BTC payment verification.
+    */
+
+    :root {
+      --bg: #05070a;
+      --bg-2: #080c11;
+      --panel: rgba(13, 18, 26, 0.78);
+      --panel-strong: rgba(18, 24, 34, 0.92);
+      --panel-soft: rgba(255, 255, 255, 0.035);
+      --line: rgba(178, 219, 255, 0.16);
+      --line-strong: rgba(178, 219, 255, 0.32);
+      --text: #f2f7ff;
+      --muted: #98a8ba;
+      --muted-2: #657587;
+      --accent: #7dd9ff;
+      --accent-2: #b8edff;
+      --danger: #ff7185;
+      --success: #9cffd1;
+      --warning: #ffe29a;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.48);
+      --radius: 22px;
+      --radius-sm: 14px;
+      --max: 1180px;
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background:
+        radial-gradient(circle at 12% -10%, rgba(125, 217, 255, 0.16), transparent 28%),
+        radial-gradient(circle at 88% 8%, rgba(142, 166, 255, 0.09), transparent 26%),
+        linear-gradient(145deg, #020305 0%, #070b10 46%, #020407 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.12));
+      z-index: -2;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent 16%, transparent 84%, rgba(255,255,255,0.025));
+      z-index: -1;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .shell {
+      width: min(var(--max), calc(100% - 32px));
+      margin-inline: auto;
+    }
+
+    .access-gate {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      background:
+        radial-gradient(circle at center, rgba(125, 217, 255, 0.14), rgba(0, 0, 0, 0.92) 46%),
+        #020305;
+      z-index: 100;
+      padding: 24px;
+    }
+
+    .access-gate.active {
+      display: grid;
+    }
+
+    .gate-card {
+      width: min(520px, 100%);
+      border: 1px solid var(--line-strong);
+      background: rgba(8, 12, 18, 0.82);
+      box-shadow: var(--shadow);
+      border-radius: 30px;
+      padding: 28px;
+      backdrop-filter: blur(20px);
+    }
+
+    .gate-lock {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: rgba(125, 217, 255, 0.1);
+      border: 1px solid var(--line-strong);
+      color: var(--accent);
+      margin-bottom: 18px;
+    }
+
+    .gate-card h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 8vw, 4rem);
+      letter-spacing: -0.08em;
+      line-height: 0.95;
+    }
+
+    .gate-card p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .gate-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .gate-error {
+      color: var(--danger);
+      min-height: 24px;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(18px);
+      background: rgba(3, 5, 8, 0.72);
+      border-bottom: 1px solid rgba(178, 219, 255, 0.08);
+    }
+
+    .nav {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      color: var(--accent-2);
+      font-weight: 800;
+      letter-spacing: -0.08em;
+      background:
+        linear-gradient(135deg, rgba(125, 217, 255, 0.18), rgba(255,255,255,0.04)),
+        rgba(255,255,255,0.03);
+      border: 1px solid var(--line-strong);
+      box-shadow: inset 0 0 28px rgba(125, 217, 255, 0.08);
+    }
+
+    .brand-name {
+      display: grid;
+      gap: 1px;
+    }
+
+    .brand-name strong {
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-name span {
+      font-family: var(--mono);
+      color: var(--muted-2);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-link,
+    .ghost-btn,
+    .primary-btn,
+    .icon-btn,
+    .danger-btn,
+    .small-btn {
+      border: 1px solid var(--line);
+      color: var(--text);
+      background: rgba(255,255,255,0.035);
+      border-radius: 999px;
+      padding: 11px 16px;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .nav-link {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .nav-link:hover,
+    .ghost-btn:hover,
+    .icon-btn:hover,
+    .small-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--line-strong);
+      background: rgba(125, 217, 255, 0.075);
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, rgba(125, 217, 255, 0.22), rgba(255,255,255,0.06));
+      border-color: rgba(125, 217, 255, 0.42);
+      color: #eafeff;
+      box-shadow: 0 16px 40px rgba(125, 217, 255, 0.09);
+      font-weight: 700;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(125, 217, 255, 0.7);
+      box-shadow: 0 18px 54px rgba(125, 217, 255, 0.14);
+    }
+
+    .danger-btn {
+      color: #ffe6ea;
+      border-color: rgba(255, 113, 133, 0.36);
+      background: rgba(255, 113, 133, 0.08);
+    }
+
+    .small-btn {
+      padding: 8px 11px;
+      font-size: 0.84rem;
+    }
+
+    .cart-pill {
+      position: relative;
+    }
+
+    .cart-count {
+      min-width: 20px;
+      height: 20px;
+      padding-inline: 6px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: #001018;
+      font-size: 0.75rem;
+      font-weight: 900;
+    }
+
+    .hero {
+      padding: 72px 0 48px;
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent-2);
+      border: 1px solid var(--line);
+      background: rgba(125, 217, 255, 0.06);
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+      background: var(--success);
+      box-shadow: 0 0 0 0 rgba(156, 255, 209, 0.62);
+      animation: pulse 1.7s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(156, 255, 209, 0.46); }
+      70% { box-shadow: 0 0 0 8px rgba(156, 255, 209, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(156, 255, 209, 0); }
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(3.2rem, 9vw, 7.8rem);
+      line-height: 0.86;
+      letter-spacing: -0.095em;
+      max-width: 900px;
+    }
+
+    .hero .gradient-text {
+      background: linear-gradient(135deg, #ffffff 8%, #b8edff 48%, #667583 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-copy {
+      color: var(--muted);
+      font-size: clamp(1rem, 2vw, 1.16rem);
+      line-height: 1.75;
+      max-width: 650px;
+      margin: 24px 0 0;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.025));
+      border-radius: 34px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      min-height: 500px;
+      display: grid;
+      align-content: space-between;
+    }
+
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: conic-gradient(from 120deg, transparent, rgba(125,217,255,0.14), transparent 24%, transparent 70%, rgba(255,255,255,0.08));
+      animation: rotate 16s linear infinite;
+      opacity: 0.7;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      inset: 1px;
+      border-radius: 33px;
+      background:
+        radial-gradient(circle at 50% 24%, rgba(125, 217, 255, 0.22), transparent 28%),
+        linear-gradient(180deg, rgba(12, 17, 24, 0.96), rgba(6, 9, 13, 0.96));
+    }
+
+    @keyframes rotate {
+      to { transform: rotate(360deg); }
+    }
+
+    .hero-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .terminal-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .vault-display {
+      margin: 44px auto 30px;
+      width: min(320px, 100%);
+      aspect-ratio: 1;
+      border-radius: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(125, 217, 255, 0.25);
+      background:
+        linear-gradient(135deg, rgba(125, 217, 255, 0.13), rgba(255,255,255,0.03)),
+        rgba(255,255,255,0.02);
+      box-shadow:
+        inset 0 0 90px rgba(125, 217, 255, 0.08),
+        0 30px 80px rgba(0,0,0,0.35);
+    }
+
+    .vault-core {
+      width: 58%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 1px solid rgba(184, 237, 255, 0.35);
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle, rgba(125,217,255,0.18), rgba(255,255,255,0.025) 58%, rgba(0,0,0,0.2));
+      box-shadow: inset 0 0 40px rgba(125,217,255,0.08);
+    }
+
+    .vault-core span {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--accent-2);
+      letter-spacing: 0.18em;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(255,255,255,0.035);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.2rem;
+      letter-spacing: -0.04em;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 4px;
+      font-family: var(--mono);
+      color: var(--muted-2);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+    }
+
+    .section {
+      padding: 54px 0;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    .section-kicker {
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 4.2rem);
+      line-height: 0.96;
+      letter-spacing: -0.075em;
+    }
+
+    .section-desc {
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 560px;
+      margin: 0;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .search-box {
+      flex: 1 1 260px;
+      min-width: 0;
+    }
+
+    .input,
+    .select,
+    .textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      color: var(--text);
+      background: rgba(255,255,255,0.035);
+      border-radius: 16px;
+      padding: 13px 14px;
+      outline: none;
+      transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .input:focus,
+    .select:focus,
+    .textarea:focus {
+      border-color: rgba(125,217,255,0.58);
+      box-shadow: 0 0 0 4px rgba(125,217,255,0.08);
+      background: rgba(255,255,255,0.055);
+    }
+
+    .select option {
+      background: #0b1017;
+      color: var(--text);
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .product-card,
+    .info-card,
+    .checkout-panel,
+    .policy-card {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: 0 18px 60px rgba(0,0,0,0.18);
+      backdrop-filter: blur(16px);
+    }
+
+    .product-card {
+      overflow: hidden;
+      transition: transform 200ms ease, border-color 200ms ease, background 200ms ease;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(125,217,255,0.42);
+      background: rgba(16, 22, 31, 0.86);
+    }
+
+    .product-media {
+      position: relative;
+      aspect-ratio: 1.08;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 32%, rgba(125,217,255,0.17), transparent 36%),
+        linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    .product-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.85;
+    }
+
+    .placeholder-orb {
+      width: 48%;
+      aspect-ratio: 1;
+      border-radius: 32px;
+      border: 1px solid rgba(125,217,255,0.28);
+      background:
+        linear-gradient(135deg, rgba(125,217,255,0.16), rgba(255,255,255,0.04)),
+        rgba(255,255,255,0.02);
+      box-shadow: inset 0 0 80px rgba(125,217,255,0.08);
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      color: var(--accent-2);
+      letter-spacing: 0.12em;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    .stock-badge,
+    .feature-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      border: 1px solid var(--line);
+      background: rgba(4, 7, 11, 0.74);
+      color: var(--success);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 0.75rem;
+      font-family: var(--mono);
+      backdrop-filter: blur(14px);
+    }
+
+    .feature-badge {
+      left: auto;
+      right: 14px;
+      color: var(--accent-2);
+    }
+
+    .product-body {
+      padding: 18px;
+    }
+
+    .product-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 9px;
+    }
+
+    .product-title {
+      margin: 0;
+      font-size: 1.08rem;
+      letter-spacing: -0.03em;
+    }
+
+    .price {
+      color: var(--accent-2);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .product-desc {
+      color: var(--muted);
+      line-height: 1.55;
+      margin: 0 0 14px;
+      min-height: 50px;
+    }
+
+    .variant-row,
+    .qty-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .qty-control {
+      display: inline-grid;
+      grid-template-columns: 34px 42px 34px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .qty-control button,
+    .qty-control span {
+      height: 34px;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      background: transparent;
+      border-right: 1px solid var(--line);
+      font-size: 0.9rem;
+    }
+
+    .qty-control button:last-child,
+    .qty-control span:last-child {
+      border-right: 0;
+    }
+
+    .product-actions {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .info-card {
+      padding: 18px;
+    }
+
+    .info-card .icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      background: rgba(125,217,255,0.08);
+      border: 1px solid var(--line);
+      color: var(--accent-2);
+      margin-bottom: 18px;
+    }
+
+    .info-card h3,
+    .policy-card h3 {
+      margin: 0 0 8px;
+      letter-spacing: -0.035em;
+    }
+
+    .info-card p,
+    .policy-card p,
+    .policy-card li {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .drawer {
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      pointer-events: none;
+    }
+
+    .drawer.active {
+      pointer-events: auto;
+    }
+
+    .drawer-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.62);
+      opacity: 0;
+      transition: opacity 220ms ease;
+    }
+
+    .drawer.active .drawer-backdrop {
+      opacity: 1;
+    }
+
+    .drawer-panel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: min(510px, 100%);
+      height: 100%;
+      background:
+        linear-gradient(180deg, rgba(16,22,31,0.98), rgba(5,7,10,0.98));
+      border-left: 1px solid var(--line-strong);
+      box-shadow: -30px 0 100px rgba(0,0,0,0.45);
+      transform: translateX(100%);
+      transition: transform 260ms ease;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .drawer.active .drawer-panel {
+      transform: translateX(0);
+    }
+
+    .drawer-head,
+    .drawer-foot {
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .drawer-foot {
+      border-bottom: 0;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 12px;
+    }
+
+    .drawer-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .drawer-head h2 {
+      margin: 0;
+      letter-spacing: -0.05em;
+    }
+
+    .cart-items {
+      padding: 18px;
+      overflow: auto;
+      display: grid;
+      align-content: start;
+      gap: 12px;
+    }
+
+    .cart-empty {
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      padding: 26px;
+      color: var(--muted);
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .cart-item {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.035);
+      padding: 12px;
+    }
+
+    .cart-thumb {
+      border-radius: 15px;
+      background: rgba(125,217,255,0.08);
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      aspect-ratio: 1;
+      font-family: var(--mono);
+      color: var(--accent-2);
+      font-size: 0.62rem;
+    }
+
+    .cart-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cart-meta {
+      min-width: 0;
+    }
+
+    .cart-meta h4 {
+      margin: 0 0 4px;
+      font-size: 0.96rem;
+      letter-spacing: -0.02em;
+    }
+
+    .cart-meta p {
+      margin: 0 0 10px;
+      color: var(--muted-2);
+      font-size: 0.84rem;
+    }
+
+    .cart-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .summary-lines {
+      display: grid;
+      gap: 8px;
+    }
+
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+    }
+
+    .summary-line.total {
+      color: var(--text);
+      font-size: 1.16rem;
+      font-weight: 800;
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: none;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: grid;
+    }
+
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.68);
+    }
+
+    .modal-card {
+      position: relative;
+      z-index: 1;
+      width: min(920px, 100%);
+      max-height: min(760px, 92vh);
+      overflow: auto;
+      border: 1px solid var(--line-strong);
+      background: rgba(8,12,18,0.96);
+      border-radius: 30px;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-content {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+    }
+
+    .modal-media {
+      min-height: 420px;
+      background:
+        radial-gradient(circle at 48% 32%, rgba(125,217,255,0.17), transparent 36%),
+        rgba(255,255,255,0.025);
+      border-right: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .modal-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 2;
+    }
+
+    .modal-body h2 {
+      margin: 8px 0 8px;
+      font-size: clamp(1.9rem, 4vw, 3.5rem);
+      line-height: 0.95;
+      letter-spacing: -0.07em;
+    }
+
+    .meta-list {
+      display: grid;
+      gap: 8px;
+      margin: 18px 0;
+    }
+
+    .meta-pill {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.035);
+      border-radius: 14px;
+      padding: 10px 12px;
+      color: var(--muted);
+    }
+
+    .checkout-wrap {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .checkout-panel {
+      padding: 22px;
+    }
+
+    .checkout-panel h3 {
+      margin: 0 0 16px;
+      letter-spacing: -0.04em;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .field .hint {
+      color: var(--muted-2);
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
+    .checkout-summary {
+      position: sticky;
+      top: 96px;
+    }
+
+    .summary-product {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(178,219,255,0.1);
+      color: var(--muted);
+    }
+
+    .summary-product strong {
+      color: var(--text);
+    }
+
+    .btc-box {
+      border: 1px solid rgba(125,217,255,0.32);
+      background: rgba(125,217,255,0.065);
+      border-radius: 18px;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btc-address {
+      font-family: var(--mono);
+      color: var(--accent-2);
+      word-break: break-all;
+      line-height: 1.5;
+      background: rgba(0,0,0,0.28);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .alert {
+      border: 1px solid rgba(255,226,154,0.35);
+      background: rgba(255,226,154,0.07);
+      color: #ffefbf;
+      border-radius: 16px;
+      padding: 13px;
+      line-height: 1.55;
+      margin-top: 14px;
+    }
+
+    .success-panel {
+      display: none;
+      border: 1px solid rgba(156,255,209,0.34);
+      background: rgba(156,255,209,0.07);
+      border-radius: 24px;
+      padding: 22px;
+      margin-top: 18px;
+    }
+
+    .success-panel.active {
+      display: block;
+    }
+
+    .success-panel h3 {
+      color: var(--success);
+    }
+
+    .receipt-box {
+      white-space: pre-wrap;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: var(--muted);
+      background: rgba(0,0,0,0.24);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      max-height: 360px;
+      overflow: auto;
+    }
+
+    .policies {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .policy-card {
+      padding: 20px;
+    }
+
+    .policy-card ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+    }
+
+    .footer {
+      padding: 36px 0 52px;
+      color: var(--muted-2);
+      border-top: 1px solid rgba(178,219,255,0.08);
+      margin-top: 36px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .footer p {
+      line-height: 1.65;
+      margin: 10px 0 0;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 120;
+      border: 1px solid var(--line-strong);
+      background: rgba(8,12,18,0.92);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+      transition: opacity 180ms ease, transform 180ms ease;
+      backdrop-filter: blur(16px);
+    }
+
+    .toast.active {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .checkout-wrap,
+      .footer-grid,
+      .modal-content {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-card {
+        min-height: 420px;
+      }
+
+      .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .info-grid,
+      .policies {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .checkout-summary {
+        position: static;
+      }
+
+      .modal-media {
+        min-height: 280px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .nav {
+        height: auto;
+        padding: 14px 0;
+        align-items: start;
+      }
+
+      .nav-links .nav-link {
+        display: none;
+      }
+
+      .hero {
+        padding-top: 44px;
+      }
+
+      .hero h1 {
+        font-size: clamp(3.1rem, 17vw, 5.6rem);
+      }
+
+      .section-head {
+        display: grid;
+        align-items: start;
+      }
+
+      .product-grid,
+      .info-grid,
+      .policies,
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-actions,
+      .product-actions,
+      .variant-row,
+      .qty-row,
+      .gate-row {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .primary-btn,
+      .ghost-btn,
+      .danger-btn {
+        width: 100%;
+      }
+
+      .cart-item {
+        grid-template-columns: 60px 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="accessGate" class="access-gate" aria-hidden="true">
+    <div class="gate-card">
+      <div class="gate-lock">▣</div>
+      <div class="eyebrow"><span class="pulse"></span> Private node</div>
+      <h1>Access Required.</h1>
+      <p>This storefront is configured for private link access. Password mode is optional and can be enabled in the store configuration.</p>
+      <div class="gate-row">
+        <input id="gatePassword" class="input" type="password" placeholder="Enter access key" autocomplete="current-password" />
+        <button id="gateSubmit" class="primary-btn">Unlock</button>
+      </div>
+      <div id="gateError" class="gate-error"></div>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <nav class="shell nav" aria-label="Main navigation">
+      <a href="#top" class="brand" aria-label="Store home">
+        <div class="brand-mark" id="brandMark">1:1</div>
+        <div class="brand-name">
+          <strong id="navShopName">UK Billz</strong>
+          <span id="navTagline">Private access</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="#products">Products</a>
+        <a class="nav-link" href="#checkout">Checkout</a>
+        <a class="nav-link" href="#policies">Policies</a>
+        <button id="openCart" class="primary-btn cart-pill" type="button">Cart <span id="cartCount" class="cart-count">0</span></button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="shell hero" aria-labelledby="heroTitle">
+      <div>
+        <div class="eyebrow"><span class="pulse"></span> Private access confirmed</div>
+        <h1 id="heroTitle"><span class="gradient-text">1:1.</span><br />Private supply.</h1>
+        <p id="heroCopy" class="hero-copy">We’re a UK-based postal service committed to delivering top-quality notes, discreetly, safely, and efficiently to customers worldwide. Our team takes pride in offering exceptional service at every stage of your order. Below, you’ll find everything you need, from updated products to checkout guidance and more. Whatever you’re looking for, it’s all just a click away. Select your item. Secure your order. Dispatch begins after confirmation.</p>
+        <div class="hero-actions">
+          <a href="#products" class="primary-btn">Enter Storefront</a>
+          <button id="heroCartBtn" class="ghost-btn" type="button">View Cart</button>
+        </div>
+      </div>
+
+      <aside class="hero-card" aria-label="Store status panel">
+        <div class="terminal-row">
+          <span>STORE NODE / LIVE</span>
+          <span id="heroCurrency">GBP</span>
+        </div>
+        <div class="vault-display">
+          <div class="vault-core"><span>78 TOTAL ORDERS</span></div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><strong id="statProducts">0</strong><span>Packages</span></div>
+          <div class="stat"><strong id="statShipping">Global</strong><span>Shipping</span></div>
+          <div class="stat"><strong>BTC</strong><span>Checkout</span></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="shell section" id="products" aria-labelledby="productsTitle">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Encrypted storefront</div>
+          <h2 id="productsTitle">Select your package.</h2>
+        </div>
+        <p class="section-desc">All of our notes are created in-house in the UK, and include all security features in real notes, making them 1:1 to almost every factor.</p>
+      </div>
+
+      <div class="filter-row">
+        <div class="search-box">
+          <input id="productSearch" class="input" type="search" placeholder="Search product grid..." />
+        </div>
+        <select id="categoryFilter" class="select" aria-label="Filter category"></select>
+        <select id="sortSelect" class="select" aria-label="Sort products">
+          <option value="featured">Featured first</option>
+          <option value="price-asc">Price: low to high</option>
+          <option value="price-desc">Price: high to low</option>
+          <option value="stock-desc">Stock: high to low</option>
+        </select>
+      </div>
+
+      <div id="productGrid" class="product-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="shell section" aria-labelledby="trustTitle">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Contact and Social Media</div>
+          <h2 id="trustTitle">Problem with your order? Contact Us.</h2>
+        </div>
+        <p class="section-desc">We can be contacted either by social media or preferably, by Telegram.</p>
+      </div>
+      <div class="info-grid">
+        <article class="info-card">
+          <div class="icon">01</div>
+          <h3>Telegram</h3>
+          <p>Our ONLY Official Telegram handle is @UK_Billz</p>
+        </article>
+        <article class="info-card">
+          <div class="icon">02</div>
+          <h3>TikTok</h3>
+          <p>Our ONLY Official TikTok is @uk_billz</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="shell section" id="checkout" aria-labelledby="checkoutTitle">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Checkout sequence</div>
+          <h2 id="checkoutTitle">Secure your order.</h2>
+        </div>
+        <p class="section-desc">Ensure all shipping info is filled out. The final payment step displays Bitcoin instructions, and the product is dispatched once payment is confirmed.</p>
+      </div>
+
+      <div class="checkout-wrap">
+        <form id="checkoutForm" class="checkout-panel" novalidate>
+          <h3>Shipping details</h3>
+          <div class="form-grid">
+            <div class="field">
+              <label for="fullName">Full name *</label>
+              <input id="fullName" name="fullName" class="input" required autocomplete="name" />
+            </div>
+            <div class="field">
+              <label for="email">Email address *</label>
+              <input id="email" name="email" class="input" type="email" required autocomplete="email" />
+            </div>
+            <div class="field">
+              <label for="phone">Phone number</label>
+              <input id="phone" name="phone" class="input" type="tel" autocomplete="tel" />
+            </div>
+            <div class="field">
+              <label for="country">Country *</label>
+              <select id="country" name="country" class="select" required></select>
+            </div>
+            <div class="field full">
+              <label for="address1">Shipping address line 1 *</label>
+              <input id="address1" name="address1" class="input" required autocomplete="address-line1" />
+            </div>
+            <div class="field full">
+              <label for="address2">Shipping address line 2</label>
+              <input id="address2" name="address2" class="input" autocomplete="address-line2" />
+            </div>
+            <div class="field">
+              <label for="city">City *</label>
+              <input id="city" name="city" class="input" required autocomplete="address-level2" />
+            </div>
+            <div class="field">
+              <label for="county">County / state</label>
+              <input id="county" name="county" class="input" autocomplete="address-level1" />
+            </div>
+            <div class="field">
+              <label for="postcode">Postcode / ZIP *</label>
+              <input id="postcode" name="postcode" class="input" required autocomplete="postal-code" />
+            </div>
+            <div class="field">
+              <label for="shippingMethod">Shipping method *</label>
+              <select id="shippingMethod" name="shippingMethod" class="select" required></select>
+              <div id="shippingHint" class="hint"></div>
+            </div>
+            <div class="field full">
+              <label for="orderNotes">Order notes</label>
+              <textarea id="orderNotes" name="orderNotes" class="textarea" placeholder="Optional delivery notes or order reference details."></textarea>
+            </div>
+          </div>
+
+          <div class="alert">
+            BTC payments are irreversible. Refunds are only given if there is good reason, and our Telegram is messaged about it. Send the exact total shown after order creation. The order will be processed only after payment is confirmed.
+          </div>
+
+          <div class="hero-actions">
+            <button type="submit" class="primary-btn">Create Order</button>
+            <button type="button" id="clearCartBtn" class="ghost-btn">Clear Cart</button>
+          </div>
+        </form>
+
+        <aside class="checkout-panel checkout-summary" aria-label="Checkout summary">
+          <h3>Order summary</h3>
+          <div id="checkoutItems"></div>
+          <div class="summary-lines" style="margin-top: 14px;">
+            <div class="summary-line"><span>Subtotal</span><strong id="checkoutSubtotal">£0.00</strong></div>
+            <div class="summary-line"><span>Shipping</span><strong id="checkoutShipping">£0.00</strong></div>
+            <div class="summary-line total"><span>Total</span><strong id="checkoutTotal">£0.00</strong></div>
+          </div>
+          <div class="btc-box">
+            <strong>BTC payment address</strong>
+            <div id="checkoutBtcAddress" class="btc-address"></div>
+            <button id="copyBtcBtn" class="small-btn" type="button">Copy BTC address</button>
+          </div>
+          <div id="btcEstimate" class="alert"></div>
+        </aside>
+      </div>
+
+      <div id="confirmationPanel" class="success-panel">
+        <h3>Awaiting Payment Confirmation</h3>
+        <p>Your order has been created. Send payment to the Bitcoin address below. Once payment is confirmed, your order will be prepared for dispatch.</p>
+        <div id="receiptBox" class="receipt-box"></div>
+        <div class="hero-actions">
+          <button id="copyOrderBtn" class="primary-btn" type="button">Copy order details</button>
+          <button id="downloadReceiptBtn" class="ghost-btn" type="button">Download receipt</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="shell section" id="policies" aria-labelledby="policiesTitle">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Policy layer</div>
+          <h2 id="policiesTitle">No Data, Total Privacy</h2>
+        </div>
+        <p class="section-desc">We store nothing about our customers; details are deleted after completion of order and our site is fully refreshed weekly.</p>
+      </div>
+
+      <div class="policies">
+        <article class="policy-card">
+          <h3>Site Data</h3>
+          <p>We refresh and delete past site visit data weekly, and user IP's are deleted every hour to ensure our customers' digital privacy.</p>
+        </article>
+        <article class="policy-card">
+          <h3>Crypto Data</h3>
+          <p>We delete all crypto data and change wallet addresses every 2 weeks, ensuring our customers' blockchain payment info is private.</p>
+        </article>
+        <article class="policy-card">
+          <h3>Shipping policy</h3>
+          <p>Shipping is free for orders above £75, except international orders. Standard shipping takes 2-3 days to arrive. Express arrives the next working day. International takes 5-14 days to arrive. All delivery addresses are deleted upon delivery confirmation. </p>
+        </article>
+        <article class="policy-card">
+          <h3>Refund policy</h3>
+          <p>We can refund seized items up to the value of £1000, just send us the seizure notice via Telegram.</p>
+        </article>
+        <article class="policy-card">
+          <h3>Contact</h3>
+          <p id="supportContact">Support Telegram: @uk_billz</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell footer-grid">
+      <div>
+        <div class="brand">
+          <div class="brand-mark" id="footerMark">UR</div>
+          <div class="brand-name">
+            <strong id="footerShopName">UK Billz</strong>
+            <span>Private Access confirmed</span>
+          </div>
+        </div>
+        <p></p>
+      </div>
+      <div>
+        <p></p>
+      </div>
+    </div>
+  </footer>
+
+  <div id="cartDrawer" class="drawer" aria-hidden="true">
+    <div id="cartBackdrop" class="drawer-backdrop"></div>
+    <aside class="drawer-panel" aria-label="Shopping cart">
+      <div class="drawer-head">
+        <h2>Cart</h2>
+        <button id="closeCart" class="icon-btn" type="button" aria-label="Close cart">✕</button>
+      </div>
+      <div id="cartItems" class="cart-items"></div>
+      <div class="drawer-foot">
+        <div class="summary-lines">
+          <div class="summary-line"><span>Subtotal</span><strong id="cartSubtotal">£0.00</strong></div>
+          <div class="summary-line"><span>Shipping estimate</span><strong id="cartShipping">£0.00</strong></div>
+          <div class="summary-line total"><span>Total estimate</span><strong id="cartTotal">£0.00</strong></div>
+        </div>
+        <a href="#checkout" id="drawerCheckoutBtn" class="primary-btn">Proceed to Checkout</a>
+        <button id="drawerClearBtn" class="ghost-btn" type="button">Clear Cart</button>
+      </div>
+    </aside>
+  </div>
+
+  <div id="productModal" class="modal" aria-hidden="true">
+    <div id="modalBackdrop" class="modal-backdrop"></div>
+    <article class="modal-card">
+      <button id="modalClose" class="icon-btn modal-close" type="button" aria-label="Close product details">✕</button>
+      <div id="modalContent" class="modal-content"></div>
+    </article>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // ============================================================
+    // EDITABLE STORE CONFIGURATION
+    // ============================================================
+    const STORE_CONFIG = {
+      shopName: "UK Billz",
+      tagline: "1:1. Every time.",
+      productCategory: "1:1 Prop Notes",
+      brandPersonality: "Mysterious / clean / premium / notes / minimal",
+      targetAudience: "Private customers and link-holders",
+      currency: "GBP",
+      currencySymbol: "£",
+      shippingCountries: ["United Kingdom", "United States", "Germany", "France", "Spain", "Italy"],
+      supportEmail: "Telegram: @uk_billz",
+      btcAddress: "bc1q83403llcvmyd6j6c33jwz7qw5m3m2ukkqzq855",
+      fallbackBtcGbpRate: 52000, // Used only if live price fetch fails.
+btcPriceApi: "https://api.coinbase.com/v2/prices/BTC-GBP/spot", // Placeholder only: 1 BTC = this many units of your fiat currency.
+
+      access: {
+        enableSplashScreen: false,
+        enablePasswordGate: false,
+        password: "change-this-access-key"
+      },
+
+      shipping: {
+        standard: { label: "Standard shipping", price: 3.99, description: "Standard tracked dispatch." },
+        express: { label: "Express shipping", price: 7.99, description: "Priority tracked dispatch." },
+        international: { label: "International shipping", price: 14.99, description: "International tracked dispatch with an included customs decoy." },
+        freeShippingOver: 75,
+        internationalRules: ""
+      },
+
+      hero: {
+        headlineLine1: "1:1 Notes.",
+        headlineLine2: "Private supply.",
+        copy: "We’re a UK-based postal service committed to delivering top-quality notes, discreetly, safely, and efficiently to customers worldwide. Our team takes pride in offering exceptional service at every stage of your order. Below, you’ll find everything you need, from updated products to checkout guidance and more. Whatever you’re looking for, it’s all just a click away. Select your item. Secure your order. Dispatch begins after confirmation."
+      },
+
+      products: [
+        {
+          id: "vault-001",
+          name: "Sample Pack - £500 (25x £20 Notes)",
+          category: "Personal-Level",
+          price: 69.99,
+          description: "See the quality before you commit. Our sample pack has 25 fresh, 1:1 prop notes, worth £500.",
+          details: "ALL of our notes are created in-house in the UK, using polymers identical to real notes. They include all security features in real notes, including but not limited to, UV numbers stamped on, raised print, 3D foil patch, and the Twenty-Pounds hologram.",
+          image: "",
+          stock: 1252,
+          featured: true,
+          variants: {
+            
+          }
+        },
+        {
+          id: "node-002",
+          name: "Starter Run - £1000 (50x £20 Notes)",
+          category: "Personal-Level",
+          price: 129.99,
+          description: "Enough to get moving more cash. Our Starter Run Pack has 50 fresh, 1:1 prop notes, worth £1000.",
+          details: "ALL of our notes are created in-house in the UK, using polymers identical to real notes. They include all security features in real notes, including but not limited to, UV numbers stamped on, raised print, 3D foil patch, and the Twenty-Pounds hologram.",
+          image: "",
+          stock: 627,
+          featured: true,
+          variants: {
+                      }
+        },
+        {
+          id: "cipher-003",
+          name: "Network Supply Pack - £5000 (250x £20 Notes)",
+          category: "Dealer-Level",
+          price: 549.99,
+          description: "For those feeding more than themselves. Our Network Supply Pack has 250 fresh, 1:1 prop notes, worth £5000",
+          details: "ALL of our notes are created in-house in the UK, using polymers identical to real notes. They include all security features in real notes, including but not limited to, UV numbers stamped on, raised print, 3D foil patch, and the Twenty-Pounds hologram.",
+          image: "",
+          stock: 125,
+          featured: false,
+          variants: {
+            
+          }
+        },
+        {
+          id: "steel-004",
+          name: "Street Bundle - £2000 (100x £20 Notes)",
+          category: "Personal-Level",
+          price: 239.99,
+          description: "Built for those who want more than a little taste. Our Street Bundle Pack has 100 fresh, 1:1 prop notes, worth £2000.",
+          details: "ALL of our notes are created in-house in the UK, using polymers identical to real notes. They include all security features in real notes, including but not limited to, UV numbers stamped on, raised print, 3D foil patch, and the Twenty-Pounds hologram.",
+          image: "",
+          stock: 313,
+          featured: true,
+          variants: {
+                      }
+        },
+        {
+          id: "terminal-005",
+          name: "Enterprise Package - £10000 (500x £20 Notes)",
+          category: "Dealer-Level",
+          price: 999.99,
+          description: "The top level. More quantity, same quality. Our Enterprise Package has 500 fresh, 1:1 prop notes, worth £10000",
+          details: "ALL of our notes are created in-house in the UK, using polymers identical to real notes. They include all security features in real notes, including but not limited to, UV numbers stamped on, raised print, 3D foil patch, and the Twenty-Pounds hologram.",
+          image: "",
+          stock: 62,
+          featured: false,
+          variants: {
+                      }
+        },
+        {
+          id: "frost-006",
+          name: "Operational Pack - £3000 (150x £20 Notes)",
+          category: "Personal-Level",
+          price: 359.99,
+          description: "For repeat customers who know what they're doing. Our Operational Pack has 150 fresh, 1:1 prop notes, worth £3000",
+          details: "ALL of our notes are created in-house in the UK, using polymers identical to real notes. They include all security features in real notes, including but not limited to, UV numbers stamped on, raised print, 3D foil patch, and the Twenty-Pounds hologram.",
+          image: "",
+          stock: 209,
+          featured: true,
+          variants: {
+                      }
+        }
+      ]
+    };
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    const CART_KEY = `cart:${STORE_CONFIG.shopName}`;
+    let cart = loadCart();
+let activeReceipt = "";
+let liveBtcGbpRate = null;
+let liveBtcUpdatedAt = null;
+
+    const els = {
+      accessGate: document.getElementById("accessGate"),
+      gatePassword: document.getElementById("gatePassword"),
+      gateSubmit: document.getElementById("gateSubmit"),
+      gateError: document.getElementById("gateError"),
+      brandMark: document.getElementById("brandMark"),
+      footerMark: document.getElementById("footerMark"),
+      navShopName: document.getElementById("navShopName"),
+      footerShopName: document.getElementById("footerShopName"),
+      navTagline: document.getElementById("navTagline"),
+      heroTitle: document.getElementById("heroTitle"),
+      heroCopy: document.getElementById("heroCopy"),
+      heroCurrency: document.getElementById("heroCurrency"),
+      statProducts: document.getElementById("statProducts"),
+      statShipping: document.getElementById("statShipping"),
+      supportContact: document.getElementById("supportContact"),
+      productGrid: document.getElementById("productGrid"),
+      productSearch: document.getElementById("productSearch"),
+      categoryFilter: document.getElementById("categoryFilter"),
+      sortSelect: document.getElementById("sortSelect"),
+      cartDrawer: document.getElementById("cartDrawer"),
+      openCart: document.getElementById("openCart"),
+      heroCartBtn: document.getElementById("heroCartBtn"),
+      closeCart: document.getElementById("closeCart"),
+      cartBackdrop: document.getElementById("cartBackdrop"),
+      cartItems: document.getElementById("cartItems"),
+      cartCount: document.getElementById("cartCount"),
+      cartSubtotal: document.getElementById("cartSubtotal"),
+      cartShipping: document.getElementById("cartShipping"),
+      cartTotal: document.getElementById("cartTotal"),
+      drawerCheckoutBtn: document.getElementById("drawerCheckoutBtn"),
+      drawerClearBtn: document.getElementById("drawerClearBtn"),
+      clearCartBtn: document.getElementById("clearCartBtn"),
+      checkoutForm: document.getElementById("checkoutForm"),
+      checkoutItems: document.getElementById("checkoutItems"),
+      checkoutSubtotal: document.getElementById("checkoutSubtotal"),
+      checkoutShipping: document.getElementById("checkoutShipping"),
+      checkoutTotal: document.getElementById("checkoutTotal"),
+      checkoutBtcAddress: document.getElementById("checkoutBtcAddress"),
+      copyBtcBtn: document.getElementById("copyBtcBtn"),
+      btcEstimate: document.getElementById("btcEstimate"),
+      country: document.getElementById("country"),
+      shippingMethod: document.getElementById("shippingMethod"),
+      shippingHint: document.getElementById("shippingHint"),
+      productModal: document.getElementById("productModal"),
+      modalBackdrop: document.getElementById("modalBackdrop"),
+      modalClose: document.getElementById("modalClose"),
+      modalContent: document.getElementById("modalContent"),
+      confirmationPanel: document.getElementById("confirmationPanel"),
+      receiptBox: document.getElementById("receiptBox"),
+      copyOrderBtn: document.getElementById("copyOrderBtn"),
+      downloadReceiptBtn: document.getElementById("downloadReceiptBtn"),
+      toast: document.getElementById("toast")
+    };
+
+    // ============================================================
+    // INITIALISE
+    // ============================================================
+    init();
+
+    function init() {
+  applyStoreConfig();
+  maybeShowAccessGate();
+  populateFilters();
+  populateCountries();
+  populateShippingMethods();
+  renderProducts();
+  renderCart();
+  bindEvents();
+  fetchLiveBtcPrice();
+}
+
+    function applyStoreConfig() {
+      const initials = STORE_CONFIG.shopName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(word => word[0])
+        .join("")
+        .toUpperCase();
+
+      document.title = `${STORE_CONFIG.shopName} | 1:1 Notes`;
+      els.brandMark.textContent = "1:1";
+      els.footerMark.textContent = initials;
+      els.navShopName.textContent = STORE_CONFIG.shopName;
+      els.footerShopName.textContent = STORE_CONFIG.shopName;
+      els.navTagline.textContent = STORE_CONFIG.tagline;
+      els.heroTitle.innerHTML = `<span class="gradient-text">${escapeHtml(STORE_CONFIG.hero.headlineLine1)}</span><br />${escapeHtml(STORE_CONFIG.hero.headlineLine2)}`;
+      els.heroCopy.textContent = STORE_CONFIG.hero.copy;
+      els.heroCurrency.textContent = STORE_CONFIG.currency;
+      els.statProducts.textContent = STORE_CONFIG.products.length;
+      els.statShipping.textContent = STORE_CONFIG.shippingCountries.includes("United Kingdom") ? "Global" : STORE_CONFIG.shippingCountries[0] || "Global";
+      els.supportContact.textContent = `Support ${STORE_CONFIG.supportEmail}`;
+      els.checkoutBtcAddress.textContent = STORE_CONFIG.btcAddress;
+      updateBtcEstimate();
+    }
+
+    function maybeShowAccessGate() {
+      const shouldShow = STORE_CONFIG.access.enableSplashScreen || STORE_CONFIG.access.enablePasswordGate;
+      if (!shouldShow) return;
+
+      const accessGranted = sessionStorage.getItem(`access:${STORE_CONFIG.shopName}`) === "granted";
+      if (accessGranted) return;
+
+      els.accessGate.classList.add("active");
+      els.accessGate.setAttribute("aria-hidden", "false");
+
+      if (!STORE_CONFIG.access.enablePasswordGate) {
+        els.gatePassword.classList.add("hidden");
+        els.gateSubmit.textContent = "Enter Storefront";
+      }
+    }
+
+    function unlockGate() {
+      if (STORE_CONFIG.access.enablePasswordGate) {
+        if (els.gatePassword.value !== STORE_CONFIG.access.password) {
+          els.gateError.textContent = "Access denied. Check the key and try again.";
+          return;
+        }
+      }
+      sessionStorage.setItem(`access:${STORE_CONFIG.shopName}`, "granted");
+      els.accessGate.classList.remove("active");
+      els.accessGate.setAttribute("aria-hidden", "true");
+      showToast("Private Access confirmed.");
+    }
+
+    function populateFilters() {
+      const categories = ["All", ...new Set(STORE_CONFIG.products.map(product => product.category))];
+      els.categoryFilter.innerHTML = categories
+        .map(category => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`)
+        .join("");
+    }
+
+    function populateCountries() {
+      els.country.innerHTML = STORE_CONFIG.shippingCountries
+        .map(country => `<option value="${escapeHtml(country)}">${escapeHtml(country)}</option>`)
+        .join("");
+    }
+
+    function populateShippingMethods() {
+      const shipping = STORE_CONFIG.shipping;
+      els.shippingMethod.innerHTML = `
+        <option value="standard">${shipping.standard.label} — ${formatMoney(shipping.standard.price)}</option>
+        <option value="express">${shipping.express.label} — ${formatMoney(shipping.express.price)}</option>
+        <option value="international">${shipping.international.label} — ${formatMoney(shipping.international.price)}</option>
+      `;
+      updateShippingHint();
+    }
+
+    function bindEvents() {
+      els.gateSubmit.addEventListener("click", unlockGate);
+      els.gatePassword.addEventListener("keydown", event => {
+        if (event.key === "Enter") unlockGate();
+      });
+
+      els.productSearch.addEventListener("input", renderProducts);
+      els.categoryFilter.addEventListener("change", renderProducts);
+      els.sortSelect.addEventListener("change", renderProducts);
+
+      els.openCart.addEventListener("click", openCartDrawer);
+      els.heroCartBtn.addEventListener("click", openCartDrawer);
+      els.closeCart.addEventListener("click", closeCartDrawer);
+      els.cartBackdrop.addEventListener("click", closeCartDrawer);
+      els.drawerCheckoutBtn.addEventListener("click", closeCartDrawer);
+      els.drawerClearBtn.addEventListener("click", clearCart);
+      els.clearCartBtn.addEventListener("click", clearCart);
+
+      els.shippingMethod.addEventListener("change", () => {
+        updateShippingHint();
+        renderCart();
+      });
+      els.country.addEventListener("change", () => {
+        maybeSwitchInternationalShipping();
+        renderCart();
+      });
+
+      els.copyBtcBtn.addEventListener("click", () => copyText(STORE_CONFIG.btcAddress, "BTC address copied."));
+      els.copyOrderBtn.addEventListener("click", () => copyText(activeReceipt, "Order details copied."));
+      els.downloadReceiptBtn.addEventListener("click", downloadReceipt);
+
+      els.checkoutForm.addEventListener("submit", handleCheckout);
+
+      els.modalBackdrop.addEventListener("click", closeProductModal);
+      els.modalClose.addEventListener("click", closeProductModal);
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          closeCartDrawer();
+          closeProductModal();
+        }
+      });
+    }
+
+    // ============================================================
+    // PRODUCT RENDERING
+    // ============================================================
+    function renderProducts() {
+      const search = els.productSearch.value.trim().toLowerCase();
+      const category = els.categoryFilter.value;
+      const sort = els.sortSelect.value;
+
+      let products = STORE_CONFIG.products.filter(product => {
+        const matchesCategory = category === "All" || product.category === category;
+        const text = `${product.name} ${product.category} ${product.description}`.toLowerCase();
+        const matchesSearch = !search || text.includes(search);
+        return matchesCategory && matchesSearch;
+      });
+
+      products = sortProducts(products, sort);
+
+      if (!products.length) {
+        els.productGrid.innerHTML = `<div class="cart-empty" style="grid-column: 1 / -1;">No products matched that search.</div>`;
+        return;
+      }
+
+      els.productGrid.innerHTML = products.map(product => renderProductCard(product)).join("");
+
+      products.forEach(product => {
+        const card = document.querySelector(`[data-card="${product.id}"]`);
+        if (!card) return;
+
+        card.querySelector("[data-add]").addEventListener("click", () => addProductFromCard(product.id));
+        card.querySelector("[data-details]").addEventListener("click", () => openProductModal(product.id));
+        card.querySelector("[data-qty-minus]").addEventListener("click", () => updateCardQty(product.id, -1));
+        card.querySelector("[data-qty-plus]").addEventListener("click", () => updateCardQty(product.id, 1));
+      });
+    }
+
+    function sortProducts(products, sort) {
+      const copy = [...products];
+      if (sort === "price-asc") return copy.sort((a, b) => a.price - b.price);
+      if (sort === "price-desc") return copy.sort((a, b) => b.price - a.price);
+      if (sort === "stock-desc") return copy.sort((a, b) => b.stock - a.stock);
+      return copy.sort((a, b) => Number(b.featured) - Number(a.featured));
+    }
+
+    function renderProductCard(product) {
+      const variantControls = renderVariantControls(product, product.id);
+      const stockText = product.stock > 0 ? `${product.stock} in stock` : "Out of stock";
+      const stockClass = product.stock > 0 ? "stock-badge" : "stock-badge";
+      const disabled = product.stock <= 0 ? "disabled" : "";
+
+      return `
+        <article class="product-card" data-card="${product.id}">
+          <div class="product-media">
+            ${product.image ? `<img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy" />` : `<div class="placeholder-orb">${escapeHtml(product.category)}</div>`}
+            <div class="${stockClass}">${escapeHtml(stockText)}</div>
+            ${product.featured ? `<div class="feature-badge">Featured</div>` : ""}
+          </div>
+          <div class="product-body">
+            <div class="product-top">
+              <h3 class="product-title">${escapeHtml(product.name)}</h3>
+              <div class="price">${formatMoney(product.price)}</div>
+            </div>
+            <p class="product-desc">${escapeHtml(product.description)}</p>
+            ${variantControls}
+            <div class="qty-row">
+              <span style="color: var(--muted); font-size: .9rem;">Quantity</span>
+              <div class="qty-control" aria-label="Quantity selector">
+                <button type="button" data-qty-minus>-</button>
+                <span data-card-qty="${product.id}">1</span>
+                <button type="button" data-qty-plus>+</button>
+              </div>
+            </div>
+            <div class="product-actions">
+              <button class="primary-btn" type="button" data-add ${disabled}>Add to cart</button>
+              <button class="ghost-btn" type="button" data-details>Details</button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderVariantControls(product, idPrefix) {
+      if (!product.variants || !Object.keys(product.variants).length) return "";
+
+      return Object.entries(product.variants).map(([name, options]) => `
+        <div class="field" style="margin-top: 10px;">
+          <label for="${idPrefix}-${slugify(name)}">${escapeHtml(name)}</label>
+          <select id="${idPrefix}-${slugify(name)}" class="select" data-variant-name="${escapeHtml(name)}">
+            ${options.map(option => `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`).join("")}
+          </select>
+        </div>
+      `).join("");
+    }
+
+    function updateCardQty(productId, delta) {
+      const el = document.querySelector(`[data-card-qty="${productId}"]`);
+      if (!el) return;
+      const product = getProduct(productId);
+      const next = Math.max(1, Math.min(product.stock, Number(el.textContent) + delta));
+      el.textContent = String(next);
+    }
+
+    function addProductFromCard(productId) {
+      const card = document.querySelector(`[data-card="${productId}"]`);
+      const qty = Number(card.querySelector(`[data-card-qty="${productId}"]`).textContent || 1);
+      const variantSelects = [...card.querySelectorAll("[data-variant-name]")];
+      const variants = Object.fromEntries(variantSelects.map(select => [select.dataset.variantName, select.value]));
+      addToCart(productId, qty, variants);
+    }
+
+    function openProductModal(productId) {
+      const product = getProduct(productId);
+      if (!product) return;
+
+      els.modalContent.innerHTML = `
+        <div class="modal-media">
+          ${product.image ? `<img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" />` : `<div class="placeholder-orb">${escapeHtml(product.category)}</div>`}
+        </div>
+        <div class="modal-body" data-modal-product="${product.id}">
+          <div class="eyebrow"><span class="pulse"></span> Product detail</div>
+          <h2>${escapeHtml(product.name)}</h2>
+          <div class="price" style="font-size: 1.4rem;">${formatMoney(product.price)}</div>
+          <p class="hero-copy" style="margin-top: 14px;">${escapeHtml(product.details || product.description)}</p>
+          <div class="meta-list">
+            <div class="meta-pill"><span>Category</span><strong>${escapeHtml(product.category)}</strong></div>
+            <div class="meta-pill"><span>Stock</span><strong>${product.stock}</strong></div>
+            <div class="meta-pill"><span>Payment</span><strong>BTC on checkout</strong></div>
+          </div>
+          ${renderVariantControls(product, `modal-${product.id}`)}
+          <div class="qty-row">
+            <span style="color: var(--muted);">Quantity</span>
+            <div class="qty-control">
+              <button type="button" data-modal-minus>-</button>
+              <span data-modal-qty>1</span>
+              <button type="button" data-modal-plus>+</button>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <button class="primary-btn" type="button" data-modal-add ${product.stock <= 0 ? "disabled" : ""}>Add to cart</button>
+            <button class="ghost-btn" type="button" onclick="closeProductModal()">Continue shopping</button>
+          </div>
+        </div>
+      `;
+
+      const body = els.modalContent.querySelector("[data-modal-product]");
+      const qtyEl = body.querySelector("[data-modal-qty]");
+      body.querySelector("[data-modal-minus]").addEventListener("click", () => {
+        qtyEl.textContent = String(Math.max(1, Number(qtyEl.textContent) - 1));
+      });
+      body.querySelector("[data-modal-plus]").addEventListener("click", () => {
+        qtyEl.textContent = String(Math.min(product.stock, Number(qtyEl.textContent) + 1));
+      });
+      body.querySelector("[data-modal-add]").addEventListener("click", () => {
+        const variants = Object.fromEntries([...body.querySelectorAll("[data-variant-name]")].map(select => [select.dataset.variantName, select.value]));
+        addToCart(product.id, Number(qtyEl.textContent), variants);
+        closeProductModal();
+      });
+
+      els.productModal.classList.add("active");
+      els.productModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeProductModal() {
+      els.productModal.classList.remove("active");
+      els.productModal.setAttribute("aria-hidden", "true");
+    }
+
+    // ============================================================
+    // CART
+    // ============================================================
+    function addToCart(productId, qty = 1, variants = {}) {
+      const product = getProduct(productId);
+      if (!product || product.stock <= 0) return;
+
+      const safeQty = Math.max(1, Math.min(qty, product.stock));
+      const key = cartItemKey(productId, variants);
+      const existing = cart.find(item => item.key === key);
+      const existingQty = existing ? existing.qty : 0;
+      const nextQty = Math.min(product.stock, existingQty + safeQty);
+
+      if (existing) {
+        existing.qty = nextQty;
+      } else {
+        cart.push({ key, productId, qty: nextQty, variants });
+      }
+
+      saveCart();
+      renderCart();
+      showToast("Item added. Cart updated.");
+    }
+
+    function removeFromCart(key) {
+      cart = cart.filter(item => item.key !== key);
+      saveCart();
+      renderCart();
+    }
+
+    function updateCartQty(key, delta) {
+      const item = cart.find(entry => entry.key === key);
+      if (!item) return;
+      const product = getProduct(item.productId);
+      item.qty = Math.max(1, Math.min(product.stock, item.qty + delta));
+      saveCart();
+      renderCart();
+    }
+
+    function clearCart() {
+      cart = [];
+      saveCart();
+      renderCart();
+      showToast("Cart cleared.");
+    }
+
+    function renderCart() {
+      const subtotal = getSubtotal();
+      const shipping = getSelectedShippingCost(subtotal);
+      const total = subtotal + shipping;
+
+      els.cartCount.textContent = String(cart.reduce((sum, item) => sum + item.qty, 0));
+      els.cartSubtotal.textContent = formatMoney(subtotal);
+      els.cartShipping.textContent = formatMoney(shipping);
+      els.cartTotal.textContent = formatMoney(total);
+      els.checkoutSubtotal.textContent = formatMoney(subtotal);
+      els.checkoutShipping.textContent = formatMoney(shipping);
+      els.checkoutTotal.textContent = formatMoney(total);
+      updateBtcEstimate();
+
+      if (!cart.length) {
+        els.cartItems.innerHTML = `<div class="cart-empty">Cart empty. Select your item to begin.</div>`;
+        els.checkoutItems.innerHTML = `<div class="cart-empty">No items selected yet.</div>`;
+        return;
+      }
+
+      els.cartItems.innerHTML = cart.map(renderCartItem).join("");
+      els.checkoutItems.innerHTML = cart.map(renderSummaryItem).join("");
+
+      cart.forEach(item => {
+        const row = document.querySelector(`[data-cart-item="${cssEscape(item.key)}"]`);
+        if (!row) return;
+        row.querySelector("[data-cart-minus]").addEventListener("click", () => updateCartQty(item.key, -1));
+        row.querySelector("[data-cart-plus]").addEventListener("click", () => updateCartQty(item.key, 1));
+        row.querySelector("[data-cart-remove]").addEventListener("click", () => removeFromCart(item.key));
+      });
+    }
+
+    function renderCartItem(item) {
+      const product = getProduct(item.productId);
+      const variantText = formatVariants(item.variants);
+      return `
+        <div class="cart-item" data-cart-item="${escapeHtml(item.key)}">
+          <div class="cart-thumb">
+            ${product.image ? `<img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" />` : "ITEM"}
+          </div>
+          <div class="cart-meta">
+            <h4>${escapeHtml(product.name)}</h4>
+            <p>${escapeHtml(variantText || product.category)}</p>
+            <div class="cart-line">
+              <div class="qty-control">
+                <button type="button" data-cart-minus>-</button>
+                <span>${item.qty}</span>
+                <button type="button" data-cart-plus>+</button>
+              </div>
+              <strong>${formatMoney(product.price * item.qty)}</strong>
+            </div>
+            <button class="small-btn" type="button" data-cart-remove style="margin-top: 10px;">Remove</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSummaryItem(item) {
+      const product = getProduct(item.productId);
+      const variantText = formatVariants(item.variants);
+      return `
+        <div class="summary-product">
+          <span><strong>${escapeHtml(product.name)}</strong><br><small>${escapeHtml(variantText || "Standard")} × ${item.qty}</small></span>
+          <strong>${formatMoney(product.price * item.qty)}</strong>
+        </div>
+      `;
+    }
+
+    function openCartDrawer() {
+      els.cartDrawer.classList.add("active");
+      els.cartDrawer.setAttribute("aria-hidden", "false");
+    }
+
+    function closeCartDrawer() {
+      els.cartDrawer.classList.remove("active");
+      els.cartDrawer.setAttribute("aria-hidden", "true");
+    }
+
+    function loadCart() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveCart() {
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    }
+
+    // ============================================================
+    // CHECKOUT
+    // ============================================================
+    function handleCheckout(event) {
+      event.preventDefault();
+
+      if (!cart.length) {
+        showToast("Add at least one item before checkout.");
+        openCartDrawer();
+        return;
+      }
+
+      if (!els.checkoutForm.reportValidity()) {
+        showToast("Complete the required checkout fields.");
+        return;
+      }
+
+      const formData = new FormData(els.checkoutForm);
+      const data = Object.fromEntries(formData.entries());
+      const orderNumber = generateOrderNumber();
+      const subtotal = getSubtotal();
+      const shipping = getSelectedShippingCost(subtotal);
+      const total = subtotal + shipping;
+      const btcEstimate = total / STORE_CONFIG.estimatedBtcRate;
+      const items = cart.map(item => {
+        const product = getProduct(item.productId);
+        return {
+          name: product.name,
+          qty: item.qty,
+          variants: item.variants,
+          unitPrice: product.price,
+          lineTotal: product.price * item.qty
+        };
+      });
+
+      activeReceipt = buildReceipt({
+        orderNumber,
+        data,
+        items,
+        subtotal,
+        shipping,
+        total,
+        btcEstimate
+      });
+
+      els.receiptBox.textContent = activeReceipt;
+      els.confirmationPanel.classList.add("active");
+      els.confirmationPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+      showToast("Order created. Payment pending.");
+    }
+
+    function buildReceipt({ orderNumber, data, items, subtotal, shipping, total, btcEstimate }) {
+      const itemLines = items.map(item => {
+        const variants = formatVariants(item.variants) || "Standard";
+        return `- ${item.name} (${variants}) × ${item.qty} @ ${formatMoney(item.unitPrice)} = ${formatMoney(item.lineTotal)}`;
+      }).join("\n");
+
+      return `${STORE_CONFIG.shopName}\nORDER CREATED — AWAITING BTC PAYMENT\n\nOrder number: ${orderNumber}\nPayment status: Awaiting BTC Payment\n\nCustomer\nName: ${data.fullName}\nEmail: ${data.email}\nPhone: ${data.phone || "Not provided"}\n\nShipping\n${data.address1}\n${data.address2 ? data.address2 + "\n" : ""}${data.city}\n${data.county ? data.county + "\n" : ""}${data.postcode}\n${data.country}\nShipping method: ${shippingLabel(data.shippingMethod)}\nOrder notes: ${data.orderNotes || "None"}\n\nProducts\n${itemLines}\n\nTotals\nSubtotal: ${formatMoney(subtotal)}\nShipping: ${formatMoney(shipping)}\nFinal total: ${formatMoney(total)}\nEstimated BTC: ${btcEstimate.toFixed(8)} BTC\n\nBitcoin payment instructions\nSend the exact order total to:\n${STORE_CONFIG.btcAddress}\n\nBTC payments are irreversible. Include your order number in your email confirmation or order notes if required. Your order will be processed after payment is confirmed.\n\nNotice\nOrders are accepted only once the products are confirmed paid for in full.`;
+    }
+
+    function downloadReceipt() {
+      if (!activeReceipt) {
+        showToast("Create an order first.");
+        return;
+      }
+      const blob = new Blob([activeReceipt], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${STORE_CONFIG.shopName.replace(/\s+/g, "-").toLowerCase()}-receipt.txt`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast("Receipt downloaded.");
+    }
+
+    function updateShippingHint() {
+      const method = els.shippingMethod.value;
+      const shipping = STORE_CONFIG.shipping[method];
+      if (!shipping) return;
+      els.shippingHint.textContent = `${shipping.description} Free shipping over ${formatMoney(STORE_CONFIG.shipping.freeShippingOver)} applies to standard/express orders. ${method === "international" ? STORE_CONFIG.shipping.internationalRules : ""}`;
+    }
+
+    function maybeSwitchInternationalShipping() {
+      const country = els.country.value;
+      if (country && country !== "United Kingdom") {
+        els.shippingMethod.value = "international";
+      }
+      updateShippingHint();
+    }
+
+    function getSelectedShippingCost(subtotal) {
+      if (!cart.length) return 0;
+      const method = els.shippingMethod.value || "standard";
+      if (subtotal >= STORE_CONFIG.shipping.freeShippingOver && method !== "international") return 0;
+      return STORE_CONFIG.shipping[method]?.price ?? STORE_CONFIG.shipping.standard.price;
+    }
+
+    function shippingLabel(key) {
+      return STORE_CONFIG.shipping[key]?.label || STORE_CONFIG.shipping.standard.label;
+    }
+
+    function updateBtcEstimate() {
+  const subtotal = getSubtotal();
+  const total = subtotal + getSelectedShippingCost(subtotal);
+
+  const rate = liveBtcGbpRate || STORE_CONFIG.fallbackBtcGbpRate;
+  const btc = total / rate;
+
+  const sourceText = liveBtcGbpRate
+    ? `Live BTC/GBP rate loaded at ${liveBtcUpdatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.`
+    : "Live BTC/GBP price unavailable. Fallback estimate is being used.";
+
+  els.btcEstimate.innerHTML = `
+    BTC amount due: <strong>${btc.toFixed(8)} BTC</strong><br>
+    GBP total: <strong>${formatMoney(total)}</strong><br>
+    Rate used: <strong>1 BTC = ${formatMoney(rate)}</strong><br>
+    ${sourceText}
+  `;
+}
+
+    // ============================================================
+    // HELPERS
+    // ============================================================
+
+async function fetchLiveBtcPrice() {
+  try {
+    const response = await fetch(STORE_CONFIG.btcPriceApi, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`BTC price fetch failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const amount = Number(data?.data?.amount);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      throw new Error("Invalid BTC price response.");
+    }
+
+    liveBtcGbpRate = amount;
+    liveBtcUpdatedAt = new Date();
+
+    updateBtcEstimate();
+    renderCart();
+
+    showToast("Live BTC price loaded.");
+  } catch (error) {
+    console.warn(error);
+
+    liveBtcGbpRate = null;
+    liveBtcUpdatedAt = null;
+
+    updateBtcEstimate();
+    showToast("BTC price unavailable. Using fallback rate.");
+  }
+}
+
+
+    function getProduct(id) {
+      return STORE_CONFIG.products.find(product => product.id === id);
+    }
+
+    function getSubtotal() {
+      return cart.reduce((sum, item) => {
+        const product = getProduct(item.productId);
+        return sum + (product ? product.price * item.qty : 0);
+      }, 0);
+    }
+
+    function formatMoney(value) {
+      return `${STORE_CONFIG.currencySymbol}${Number(value).toFixed(2)}`;
+    }
+
+    function formatVariants(variants = {}) {
+      return Object.entries(variants)
+        .filter(([, value]) => value)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(" / ");
+    }
+
+    function cartItemKey(productId, variants) {
+      return `${productId}:${JSON.stringify(variants || {})}`;
+    }
+
+    function generateOrderNumber() {
+      const date = new Date();
+      const stamp = date.toISOString().slice(2, 10).replace(/-/g, "");
+      const random = Math.random().toString(36).slice(2, 8).toUpperCase();
+      return `${STORE_CONFIG.shopName.replace(/[^A-Z0-9]/gi, "").slice(0, 4).toUpperCase() || "SHOP"}-${stamp}-${random}`;
+    }
+
+    async function copyText(text, message) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast(message);
+      } catch {
+        const temp = document.createElement("textarea");
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        temp.remove();
+        showToast(message);
+      }
+    }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("active");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => els.toast.classList.remove("active"), 2200);
+    }
+
+    function slugify(value) {
+      return String(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function cssEscape(value) {
+      if (window.CSS && CSS.escape) return CSS.escape(value);
+      return String(value).replace(/[^a-zA-Z0-9_-]/g, "\\$&");
+    }
+  </script>
+</body>
+</html>
